@@ -75,5 +75,5 @@ TODO
 
 ## TODO
 
-- Support outputing MeTTa code as Python data structure (as opposed to
+- Support outputting MeTTa code as Python data structure (as opposed to
   just a string in MeTTa format).
