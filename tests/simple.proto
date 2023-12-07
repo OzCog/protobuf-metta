@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package simple;
+
+// Define TestMsg message type
+message TestMsg {
+  int32 value = 1;
+  string msg = 2;
+}
+
+// Define Greeter services
+service TestService {
+  rpc test(TestMsg) returns (TestMsg) {}
+}
