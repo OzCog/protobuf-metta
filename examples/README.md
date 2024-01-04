@@ -5,8 +5,8 @@ specification to MeTTa.
 
 ## Prerequisites
 
-- Build and install protobuf-metta.  See `../README.md` for
-  information about that.
+- Build and install protobuf-metta.  See `README.md` at the root of
+  the repository for information.
 
 ## Usage
 
@@ -32,10 +32,18 @@ example_pb2.py
 
 ### Parse the protobuf specification
 
-A python file, `example.py`, that outputs the protobuf specification
-in MeTTa format can be found under this folder.
+A python file, `example.py`, that outputs the example protobuf
+specification in MeTTa format can be found under this folder.
 
-Let us examine that file.  The first two lines
+You can run that example with the command
+
+```bash
+python example.py > example.metta
+```
+
+which should produce `example.metta`.
+
+Let us now examine `example.py`.  The first two lines
 
 ```python
 import example_pb2
@@ -66,10 +74,4 @@ Finally the result is printed to stdout
 
 ```python
 print(metta_desc)
-```
-
-One may invoke that example with the command line
-
-```bash
-python example.py > example.metta
 ```
