@@ -10,6 +10,7 @@ Convert protobuf specification to MeTTa.
 
 - python (tested with Python 3.9.2)
 - grpcio-tools (tested with 1.19.0)
+- wheel (tested with 0.42.0)
 
 ### Build
 
@@ -29,7 +30,7 @@ pip install dist/protobuf_metta-0.1.0-py3-none-any.whl
 
 ### Test
 
-Optionally you may run the tests by entering the following command
+Optionally, you may run the tests by entering the following command
 
 ```Bash
 python setup.py pytest
