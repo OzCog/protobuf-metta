@@ -3,9 +3,15 @@
 class ProtobufParser:
     """Protobuf parser"""
 
-    def __init__(self, desc):
+    def __init__(self, desc, prefix:str=""):
         # Set protobuf DESCRIPTOR object
         self.descriptor = desc
+
+        # Set prefix, a string to be prepended before every MeTTa
+        # symbol to guaranty uniqness.  If no such prefix is provided
+        # then fall back on package.
+        self.prefix = prefix if prefix else self.descriptor.package
+        self.prefix_dot = self.prefix + "."
 
         # Protobuf type name indices
         self.TYPE_DOUBLE = 1
@@ -59,8 +65,10 @@ class ProtobufParser:
         desc_rep += ";;\n"
         desc_rep += ";; Protobuf file: {}\n".format(self.descriptor.name)
         desc_rep += ";; Protobuf syntax: {}\n".format(self.descriptor.syntax)
-        if self.descriptor.package != "":
+        if self.descriptor.package:
             desc_rep += ";; Protobuf package: {}\n".format(self.descriptor.package)
+        if self.prefix:
+            desc_rep += ";; Prefix: {}\n".format(self.prefix)
         desc_rep += ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n"
         desc_rep += "\n"
 
@@ -94,9 +102,9 @@ class ProtobufParser:
         """Parse a field type, return its representation in MeTTa format."""
 
         if field.type == self.TYPE_MESSAGE:
-            return field.message_type.full_name
+            return self.prefix_dot + field.message_type.name
         if field.type == self.TYPE_ENUM:
-            return field.enum_type.full_name
+            return self.prefix_dot + field.enum_type.name
         return self.type_names[field.type]
 
     def enum_to_metta(self, enm) -> str:
@@ -142,7 +150,7 @@ class ProtobufParser:
         enm_rep : str = ""
 
         # Type declaration
-        enm_class_name : str = enm.full_name
+        enm_class_name : str = self.prefix_dot + enm.name
         enm_rep += ";; Define {} enum type\n".format(enm_class_name)
         enm_rep += "(: {} Type)\n\n".format(enm_class_name)
 
@@ -153,40 +161,6 @@ class ProtobufParser:
         enm_rep += "\n"
 
         return enm_rep
-
-    def get_prefix_name(self, full_name : str) -> str:
-        """Given a full name type, return the prefix without its name.
-
-        Example:
-
-        ```
-        self.get_prefix_name("example.Person.Name")
-        ```
-
-        returns
-
-        ```
-        "example.Person."
-        ```
-
-        If not such prefix exists, then it returns the empty string.  For instance
-
-        ```
-        self.get_prefix_name("Person")
-        ```
-
-        returns
-
-        ```
-        ""
-        ```
-
-        """
-
-        substrings = full_name.rsplit('.', 1)
-        if len(substrings) > 1:
-            return substrings[0] + '.'
-        return ""
 
     def message_to_metta(self, msg) -> str:
 
@@ -244,7 +218,7 @@ class ProtobufParser:
         msg_rep : str = ""
 
         # Type declaration
-        class_name : str = msg.full_name
+        class_name : str = self.prefix_dot + msg.name
         msg_rep += ";; Define {} type\n".format(class_name)
         msg_rep += "(: {} Type)\n\n".format(class_name)
 
@@ -257,7 +231,7 @@ class ProtobufParser:
             msg_rep += self.enum_to_metta(nested_enm)
 
         # Type constructor
-        ctor_name : str = "{}Mk{}".format(self.get_prefix_name(class_name), msg.name)
+        ctor_name : str = "{}Mk{}".format(self.prefix_dot, msg.name)
         msg_rep += ";; Define {} constuctor\n".format(class_name)
         msg_rep += "(: {}\n   (->\n".format(ctor_name)
         for field_num, field in msg.fields_by_number.items():
@@ -311,9 +285,12 @@ class ProtobufParser:
 
         # Service methods
         for mtd_name, mtd in srv.methods_by_name.items():
-            srv_rep += ";; Define {} service method\n".format(mtd.full_name)
-            srv_rep += "(: {} (-> {} {}))\n\n".format(mtd.full_name,
-                                                      mtd.input_type.full_name,
-                                                      mtd.output_type.full_name)
+            pfx_mtd_name = self.prefix_dot + mtd_name
+            pfx_input_name = self.prefix_dot + mtd.input_type.name
+            pfx_output_name = self.prefix_dot + mtd.output_type.name
+            srv_rep += ";; Define {} service method\n".format(pfx_mtd_name)
+            srv_rep += "(: {} (-> {} {}))\n\n".format(pfx_mtd_name,
+                                                      pfx_input_name,
+                                                      pfx_output_name)
 
         return srv_rep
