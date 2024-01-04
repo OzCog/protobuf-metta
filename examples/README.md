@@ -56,11 +56,14 @@ from protobuf-metta library.
 The next line
 
 ```python
-proto_parser = parser.ProtobufParser(example_pb2.DESCRIPTOR)
+proto_parser = parser.ProtobufParser(example_pb2.DESCRIPTOR, prefix="example")
 ```
 
 instantiate a `proto_parser` object from the `ProtobufParser` class
-given a descriptor object define in `example_pb2.py`.
+given a descriptor object define in `example_pb2.py`.  Additionally it
+provides a prefix which will be prepended before class and method
+names.  This can be a way to guaranty uniqueness of names when
+multiple protobuf specifications are converted into MeTTa.
 
 The method `parse_description()` is called in the following line
 
