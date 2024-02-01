@@ -76,5 +76,8 @@ TODO
 
 ## TODO
 
-- Support outputting MeTTa code as Python data structure (as opposed to
-  just a string in MeTTa format).
+- [ ] Support outputting MeTTa code as Python data structure, as
+  opposed to just a string in MeTTa format.
+- [ ] Upgrade installation procedure, using pip instead of setuptools
+  directly.  See the following tutorial
+  https://spike.sh/blog/how-to-create-a-pip-package-for-python/.
