@@ -3,7 +3,7 @@
 class ProtobufParser:
     """Protobuf parser"""
 
-    def __init__(self, desc, prefix:str=""):
+    def __init__(self, desc, prefix:str="", curried:bool=False):
         # Set protobuf DESCRIPTOR object
         self.descriptor = desc
 
@@ -12,6 +12,10 @@ class ProtobufParser:
         # then fall back on package.
         self.prefix = prefix if prefix else self.descriptor.package
         self.prefix_dot = self.prefix + "."
+
+        # Set curried.  If True then all type signatures are curried,
+        # meaning (-> T1 T2 T3) is turned into (-> T1 (-> T2 T3))
+        self.curried = curried
 
         # Protobuf type name indices
         self.TYPE_DOUBLE = 1
@@ -212,6 +216,27 @@ class ProtobufParser:
            $surname)
         ```
 
+        If self.curried has been set to True then
+
+        ```
+        ;; Define example.Name constructor
+        (: example.MkName
+           (->
+            String ; forename
+            String ; surname
+            example.Name))
+        ```
+
+        will look like
+
+        ```
+        ;; Define example.Name constructor
+        (: example.MkName
+           (-> String ; forename
+               (-> String ; surname
+                   example.Name)))
+        ```
+
         """
 
         # Message string representation in MeTTa format
@@ -231,13 +256,27 @@ class ProtobufParser:
             msg_rep += self.enum_to_metta(nested_enm)
 
         # Type constructor
-        ctor_name : str = "{}Mk{}".format(self.prefix_dot, msg.name)
-        msg_rep += ";; Define {} constuctor\n".format(class_name)
-        msg_rep += "(: {}\n   (->\n".format(ctor_name)
-        for field_num, field in msg.fields_by_number.items():
-            type_name : str = self.field_type_to_metta(field)
-            msg_rep += "    {} ; {}\n".format(type_name, field.name)
-        msg_rep += "    {}))\n\n".format(class_name)
+        ctor_name : str = f"{self.prefix_dot}Mk{msg.name}"
+        msg_rep += f";; Define {class_name} constuctor\n"
+        msg_rep += f"(: {ctor_name}\n"
+        if self.curried:
+            field_cnt = 0       # Different than field_num because it
+                                # does not take into account the
+                                # protobuf field index.
+            indent = 3*" "      # Space indentation to be place in
+                                # front of "(-> T"
+            for field_num, field in msg.fields_by_number.items():
+                type_name : str = self.field_type_to_metta(field)
+                msg_rep += f"{indent}(-> {type_name} ; {field.name}\n"
+                indent += 4*" "
+                field_cnt += 1
+            msg_rep += f"{indent}{class_name}{field_cnt*')'})\n"
+        else:
+            msg_rep += "   (->\n"
+            for field_num, field in msg.fields_by_number.items():
+                type_name : str = self.field_type_to_metta(field)
+                msg_rep += f"    {type_name} ; {field.name}\n"
+            msg_rep += f"    {class_name}))\n\n"
 
         # Access functions
         field_names = [field.name for _, field in msg.fields_by_number.items()]
