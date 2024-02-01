@@ -189,10 +189,10 @@ class ProtobufParser:
 
         ;; Define example.Name constructor
         (: example.MkName
-        (->
-         String ; forename
-         String ; surname
-         example.Name))
+           (->
+            String ; forename
+            String ; surname
+            example.Name))
 
         ;; Define example.Name access functions
 
@@ -312,10 +312,12 @@ class ProtobufParser:
 
         ```
         ;; Define example.Greeter.salute service method
-        (: example.Greeter.salute (-> Person Greet))
+        (: example.Greeter.salute
+           (-> Person Greet))
 
         ;; Define example.Greeter.wish service method
-        (: example.Greeter.wish (-> Person Greet))
+        (: example.Greeter.wish
+           (-> Person Greet))
         ```
 
         """
